@@ -1,0 +1,19 @@
+name: 'Jenkins AI'
+description: 'Analyze Jenkins logs using AI and post results to Slack'
+inputs:
+  slack-access-token:
+    description: 'Access token for Slack, used to match commit emails to usernames'
+    required: true
+  slack-message-thread-ts:
+    description: 'Thread timestamp for Slack messages, used to post results in the same thread'
+    required: true
+  slack-channel:
+    description: 'Slack channel or user ID where the message is posted'
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.slack-access-token }}
+    - ${{ inputs.slack-message-thread-ts }}
+    - ${{ inputs.slack-channel }}
