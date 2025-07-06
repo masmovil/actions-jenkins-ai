@@ -1,6 +1,7 @@
 import os
 import requests
 from google.cloud import storage
+import tempfile
 
 STATUS_URL = os.environ.get('STATUS_URL')
 SLACK_TOKEN = os.environ.get('SLACK_ACCESS_TOKEN')
@@ -33,7 +34,11 @@ class JenkinsRun:
 
 
 def download_console_log(jenkins_run):
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GCP_SA
+    # Write GCP_SA contents to a temporary file and set the env variable
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_cred_file:
+        temp_cred_file.write(GCP_SA)
+        temp_cred_file.flush()
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_cred_file.name
 
     bucket_name = "mm-platform-sre-prod-jenkins-logs"
     blob_path = f"ci-masstack/{jenkins_run.directory}/{jenkins_run.job_name}/{jenkins_run.branch}/{jenkins_run.build_number}/console.log"
