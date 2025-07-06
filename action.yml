@@ -1,6 +1,9 @@
 name: 'Jenkins AI'
 description: 'Analyze Jenkins logs using AI and post results to Slack'
 inputs:
+  status-url:
+    description: 'URL to the Jenkins job status page, used to fetch logs'
+    required: true
   slack-access-token:
     description: 'Access token for Slack, used to match commit emails to usernames'
     required: true
@@ -10,6 +13,9 @@ inputs:
   slack-channel:
     description: 'Slack channel or user ID where the message is posted'
     required: true
+  gcp-sa:
+    description: 'Google Cloud Service Account JSON, used for authentication with Google Cloud services'
+    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -18,3 +24,4 @@ runs:
     - ${{ inputs.slack-access-token }}
     - ${{ inputs.slack-message-thread-ts }}
     - ${{ inputs.slack-channel }}
+    - ${{ inputs.gcp-sa }}
