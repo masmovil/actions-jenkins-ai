@@ -50,12 +50,12 @@ def main():
 
     jenkins_run = JenkinsRun(STATUS_URL)
 
-    message = 'Hello 👋! This is the start of the 🤖 Jenkins AI analysis for \
-    <{}|job> {}/{}, branch {}, build number {}'.format(STATUS_URL,
+    message = ('Hello :wave:! This is the start of the :robot_face: Jenkins AI analysis for '
+               '<{}|job> `{}/{}`, branch `{}`, build number `{}`').format(STATUS_URL,
                                                        jenkins_run.directory,
                                                        jenkins_run.job_name,
                                                        jenkins_run.branch,
-                                                       jenkins_run.build_number),
+                                                       jenkins_run.build_number)
     send_slack_message(message)
 
     # Download the console.log file from Google Cloud Storage
