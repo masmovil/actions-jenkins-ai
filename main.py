@@ -1,10 +1,12 @@
 import os
 import requests
+from google.cloud import storage
 
 STATUS_URL = os.environ.get('STATUS_URL')
 SLACK_TOKEN = os.environ.get('SLACK_ACCESS_TOKEN')
 THREAD_TS = os.environ.get('SLACK_MESSAGE_THREAD_TS')
 CHANNEL = os.environ.get('SLACK_CHANNEL')
+GOOGLE_APPLICATION_CREDENTIALS = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 
 class JenkinsRun:
     def __init__(self, status_url):
@@ -29,6 +31,16 @@ class JenkinsRun:
 
         return
 
+
+def download_console_log(jenkins_run):
+    bucket_name = "mm-platform-sre-prod-jenkins-logs"
+    blob_path = f"ci-masstack/{jenkins_run.directory}/{jenkins_run.job_name}/{jenkins_run.branch}/{jenkins_run.build_number}/console.log"
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(blob_path)
+    content = blob.download_as_text()
+    return content
+
 def main():
     validate_environment_variables()
 
@@ -36,17 +48,24 @@ def main():
 
     jenkins_run = JenkinsRun(STATUS_URL)
 
-    message = ('Hello! This is the start of the Jenkins AI analysis for '
-               '<{}|job> {}/{}, branch {}, build number {}').format(STATUS_URL,
-                                                                          jenkins_run.directory,
-                                                                          jenkins_run.job_name,
-                                                                          jenkins_run.branch,
-                                                                          jenkins_run.build_number),
+    # Download the console.log file from Google Cloud Storage
+    console_log_content = download_console_log(jenkins_run)
+    print("console.log content downloaded, length:", len(console_log_content))
+    print("First 100 characters of console.log:", console_log_content[:100])
+    print("Last 100 characters of console.log:", console_log_content[-100:])
+
+    message = 'Hello 👋! This is the start of the 🤖 Jenkins AI analysis for \
+    <{}|job> {}/{}, branch {}, build number {}'.format(STATUS_URL,
+                                                       jenkins_run.directory,
+                                                       jenkins_run.job_name,
+                                                       jenkins_run.branch,
+                                                       jenkins_run.build_number),
     send_slack_message(message)
 
     return
 
 def validate_environment_variables():
+    print('GOOGLE_APPLICATION_CREDENTIALS: ', GOOGLE_APPLICATION_CREDENTIALS)
     if not STATUS_URL or not SLACK_TOKEN or not THREAD_TS or not CHANNEL:
         print('Error: One or more required environment variables are not set.')
         print('Please ensure STATUS_URL, SLACK_ACCESS_TOKEN, SLACK_MESSAGE_THREAD_TS, and SLACK_CHANNEL are set.')
