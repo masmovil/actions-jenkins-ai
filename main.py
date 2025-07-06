@@ -47,19 +47,18 @@ def main():
 
     jenkins_run = JenkinsRun(STATUS_URL)
 
-    message = ('Hello :wave:! This is the start of the :robot_face: Jenkins AI analysis for '
-               '<{}|job> `{}/{}`, branch `{}`, build number `{}`').format(STATUS_URL,
+    authenticate_gcp()
+
+    # Download the console.log file from Google Cloud Storage
+    console_log_content = download_console_log(jenkins_run)
+
+    message = ('Hello :wave:! This is the :robot_face: Jenkins AI analysis for '
+               '<{}|job> `{}/{}`, branch `{}`, build number `{}`:').format(STATUS_URL,
                                                        jenkins_run.directory,
                                                        jenkins_run.job_name,
                                                        jenkins_run.branch,
                                                        jenkins_run.build_number)
     send_slack_message_to_thread(message)
-
-    authenticate_gcp()
-
-    # Download the console.log file from Google Cloud Storage
-    console_log_content = download_console_log(jenkins_run)
-    print("First 100 characters of console.log:", console_log_content[:100])
 
     # Analyze the log
     ai_analysis = analyze_log(console_log_content)
@@ -99,10 +98,15 @@ def authenticate_gcp():
 def download_console_log(jenkins_run):
     bucket_name = "mm-platform-sre-prod-jenkins-logs"
     blob_path = f"ci-masstack/{jenkins_run.directory}/{jenkins_run.job_name}/{jenkins_run.branch}/{jenkins_run.build_number}/console.log"
-    client = storage.Client()
-    bucket = client.bucket(bucket_name)
-    blob = bucket.blob(blob_path)
-    content = blob.download_as_text()
+    try:
+        client = storage.Client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(blob_path)
+        content = blob.download_as_text()
+    except Exception as e:
+        print(f"Error downloading console.log from GCS: {e}")
+        print(f"Bucket: {bucket_name}, Blob Path: {blob_path}")
+        exit(1)
     return content
 
 def analyze_log(log_content):
