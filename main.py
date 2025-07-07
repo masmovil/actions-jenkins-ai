@@ -12,7 +12,7 @@ THREAD_TS = os.environ.get('SLACK_MESSAGE_THREAD_TS')
 CHANNEL = os.environ.get('SLACK_CHANNEL')
 GCP_SA = os.environ.get('GCP_SA')
 
-PROJECT_ID = "mm-swe-sta"
+PROJECT_ID = "mm-swe-prod"
 REGION = "europe-west1"
 GEMINI_MODEL_NAME = "gemini-2.5-flash"
 
