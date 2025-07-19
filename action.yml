@@ -17,11 +17,5 @@ inputs:
     description: 'Google Cloud Service Account JSON, used for authentication with Google Cloud services'
     required: true
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
-  args:
-    - ${{ inputs.status-url }}
-    - ${{ inputs.slack-access-token }}
-    - ${{ inputs.slack-message-thread-ts }}
-    - ${{ inputs.slack-channel }}
-    - ${{ inputs.gcp-sa }}
+  using: 'node20'
+  main: 'dist/index.js'
