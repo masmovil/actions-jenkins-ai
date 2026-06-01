@@ -134,18 +134,33 @@ async function authenticateGcp(gcpSa) {
 async function downloadConsoleLog(jenkinsRun) {
     const bucketName = "mm-platform-sre-prod-jenkins-logs";
     const blobPath = `ci-masstack/${jenkinsRun.directory}/${jenkinsRun.jobName}/${jenkinsRun.branch}/${jenkinsRun.buildNumber}/console.log`;
-    try {
-        const storage = new storage_1.Storage();
-        const bucket = storage.bucket(bucketName);
-        const file = bucket.file(blobPath);
-        const [content] = await file.download();
-        return content.toString('utf-8');
+    const maxRetries = 5;
+    let lastError;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            core.info(`Attempting to download console.log (attempt ${attempt}/${maxRetries})`);
+            const storage = new storage_1.Storage();
+            const bucket = storage.bucket(bucketName);
+            const file = bucket.file(blobPath);
+            const [content] = await file.download();
+            core.info('Console.log downloaded successfully');
+            return content.toString('utf-8');
+        }
+        catch (error) {
+            lastError = error instanceof Error ? error : new Error(String(error));
+            core.warning(`Attempt ${attempt}/${maxRetries} failed: ${lastError.message}`);
+            if (attempt < maxRetries) {
+                // First retry after 10s, then exponential backoff: 10s, 20s, 40s, 80s
+                const delayMs = attempt === 1 ? 10000 : Math.pow(2, attempt - 1) * 10000;
+                core.info(`Waiting ${delayMs / 1000}s before retry...`);
+                await new Promise(resolve => setTimeout(resolve, delayMs));
+            }
+        }
     }
-    catch (error) {
-        core.error(`Error downloading console.log from GCS: ${error instanceof Error ? error.message : String(error)}`);
-        core.error(`Bucket: ${bucketName}, Blob Path: ${blobPath}`);
-        throw error;
-    }
+    // If we reach here, all retries failed
+    core.error(`Error downloading console.log from GCS after ${maxRetries} attempts: ${lastError?.message}`);
+    core.error(`Bucket: ${bucketName}, Blob Path: ${blobPath}`);
+    throw lastError || new Error('Download failed after all retries');
 }
 async function analyzeLog(logContent) {
     const promptText = `

@@ -1,13 +1,14 @@
 {
   "name": "jenkins-ai-action",
   "version": "1.0.0",
+  "packageManager": "pnpm@10.33.4",
   "description": "Analyze Jenkins logs using AI and post results to Slack",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc && ncc build dist/main.js -o dist --source-map --license licenses.txt",
-    "package": "npm run build",
+    "package": "pnpm run build",
     "test": "jest",
-    "test:action": "npm run build && node test.js"
+    "test:action": "pnpm run build && node test.js"
   },
   "repository": {
     "type": "git",

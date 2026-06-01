@@ -55,20 +55,24 @@ jobs:
 ### Prerequisites
 
 - Node.js 20+
-- npm
+- pnpm 10+ (Corepack recommended)
 
 ### Setup
 
 1. Clone the repository
-2. Install dependencies:
+2. Enable Corepack if needed:
    ```bash
-   npm install
+   corepack enable
+   ```
+3. Install dependencies:
+   ```bash
+   pnpm install
    ```
 
 ### Build
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 This will:
@@ -79,7 +83,7 @@ This will:
 
 #### Unit Tests
 ```bash
-npm test
+pnpm test
 ```
 
 #### Integration Testing (Local Action Testing)
@@ -125,7 +129,7 @@ The test script (`test.js`) does the following:
 
 3. **Run the local test**:
    ```bash
-   npm run test:action
+   pnpm run test:action
    ```
 
 ##### What You'll See
@@ -164,6 +168,7 @@ The test script provides detailed logging:
 │   └── index.js.map         # Source map (auto-generated)
 ├── action.yml               # GitHub Action metadata
 ├── package.json             # Node.js dependencies and scripts
+├── pnpm-lock.yaml           # pnpm dependency lockfile
 ├── tsconfig.json            # TypeScript configuration
 ├── jest.config.js           # Jest testing configuration
 ├── .env.example             # Environment variables template
@@ -173,8 +178,8 @@ The test script provides detailed logging:
 ## Contributing
 
 1. Make changes to `main.ts`
-2. Run tests: `npm test`
-3. Build the project: `npm run build`
+2. Run tests: `pnpm test`
+3. Build the project: `pnpm run build`
 4. Commit both source and built files (`dist/` directory must be committed)
 
 ## License
